@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
+from bson.objectid import ObjectId
 
 load_dotenv()
 
@@ -20,7 +21,17 @@ except Exception as e:
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+
+    listings = db["listings"]
+
+    all_listings = list(
+        listings.find({"status": "available"})
+    )
+
+    return render_template(
+        "home.html",
+        listings=all_listings
+    )
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -72,3 +83,58 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/profile")
+def profile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    users = db["users"]
+
+    user = users.find_one({
+        "_id": ObjectId(session["user_id"])
+    })
+
+    return render_template("profile.html", user=user)
+
+@app.route("/sell", methods=["GET", "POST"])
+def sell():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+
+        print("POST RECEIVED")
+
+        title = request.form["title"]
+        description = request.form["description"]
+        price = request.form["price"]
+        condition = request.form["condition"]
+        city = request.form["city"]
+        payment_methods = request.form.getlist("payment_methods")
+
+        listings = db["listings"]
+
+        listing = {
+            "seller_id": session["user_id"],
+            "title": title,
+            "description": description,
+            "price": int(price),
+            "condition": condition,
+            "city": city,
+            "payment_methods": payment_methods,
+            "status": "available"
+        }
+
+        print("ABOUT TO INSERT")
+
+        result = listings.insert_one(listing)
+
+        print("INSERT FINISHED")
+        print("Listing ID:", result.inserted_id)
+        print("Collection:", listings.name)
+        print("Count:", listings.count_documents({}))
+
+    return render_template("sell.html")
