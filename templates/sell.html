@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sell an Item</title>
+</head>
+
+<body>
+
+    <h1>Sell an Item</h1>
+
+    <form method="POST" action="{{ url_for('sell') }}">
+
+        <label>Title</label>
+        <br>
+        <input
+            type="text"
+            name="title"
+            placeholder="Example: Nike Running Shoes"
+            required
+        >
+
+        <br><br>
+
+        <label>Description</label>
+        <br>
+        <textarea
+            name="description"
+            placeholder="Describe the item"
+            required
+        ></textarea>
+
+        <br><br>
+
+        <label>Price (EGP)</label>
+        <br>
+        <input
+            type="number"
+            name="price"
+            min="0"
+            required
+        >
+
+        <br><br>
+
+        <label>Condition</label>
+        <br>
+        <select name="condition" required>
+            <option value="">Select condition</option>
+            <option value="new">New</option>
+            <option value="like_new">Like New</option>
+            <option value="good">Good</option>
+            <option value="fair">Fair</option>
+        </select>
+
+        <br><br>
+
+        <label>City</label>
+        <br>
+        <input
+            type="text"
+            name="city"
+            placeholder="Example: Cairo"
+            required
+        >
+
+        <br><br>
+
+        <label>Accepted Payment</label>
+        <br>
+
+        <input
+            type="checkbox"
+            name="payment_methods"
+            value="cash"
+        >
+        Cash
+
+        <br>
+
+        <input
+            type="checkbox"
+            name="payment_methods"
+            value="instapay"
+        >
+        InstaPay
+
+        <br><br>
+
+        <button type="submit">
+            Publish Listing
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('home') }}">
+        Back to Home
+    </a>
+
+</body>
+</html>

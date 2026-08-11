@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vinted Egypt</title>
+    <title>My Marketplace</title>
 
     <link
         rel="stylesheet"
@@ -10,7 +10,98 @@
 </head>
 
 <body>
+
+    <nav>
+
+        <a href="{{ url_for('home') }}">
+            Home
+        </a>
+
+        {% if session.get("user_id") %}
+
+            <span>
+                Hello, {{ session.get("user_name") }}
+            </span>
+
+            <a href="{{ url_for('profile') }}">
+                Profile
+            </a>
+            <a href="{{ url_for('sell') }}">
+                Sell Item
+            </a>
+
+            <a href="{{ url_for('logout') }}">
+                Logout
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('login') }}">
+                Login
+            </a>
+
+            <a href="{{ url_for('register') }}">
+                Register
+            </a>
+
+        {% endif %}
+
+    </nav>
+
+    <hr>
+
     <h1>My Marketplace</h1>
+
     <p>Buy and sell pre-owned items.</p>
+    <hr>
+
+    <h2>Available Listings</h2>
+
+    {% if listings %}
+
+        {% for listing in listings %}
+
+            <div>
+
+                <h3>
+                    {{ listing["title"] }}
+                </h3>
+
+                <p>
+                    {{ listing["description"] }}
+                </p>
+
+                <p>
+                    <strong>Price:</strong>
+                    {{ listing["price"] }} EGP
+                </p>
+
+                <p>
+                    <strong>Condition:</strong>
+                    {{ listing["condition"] }}
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    {{ listing["city"] }}
+                </p>
+
+                <p>
+                    <strong>Payment:</strong>
+                    {{ listing["payment_methods"] | join(", ") }}
+                </p>
+
+            </div>
+
+            <hr>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>No listings available yet.</p>
+
+    {% endif %}
+
 </body>
 </html>
