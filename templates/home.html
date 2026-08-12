@@ -56,20 +56,16 @@
     <hr>
 
     <h2>Available Listings</h2>
-
     {% if listings %}
-
         {% for listing in listings %}
 
             <div>
 
                 <h3>
-                    {{ listing["title"] }}
+                    <a href="{{ url_for('listing_details', listing_id=listing['_id']) }}">
+                        {{ listing["title"] }}
+                    </a>
                 </h3>
-
-                <p>
-                    {{ listing["description"] }}
-                </p>
 
                 <p>
                     <strong>Price:</strong>
@@ -77,24 +73,13 @@
                 </p>
 
                 <p>
-                    <strong>Condition:</strong>
-                    {{ listing["condition"] }}
-                </p>
-
-                <p>
                     <strong>Location:</strong>
                     {{ listing["city"] }}
-                </p>
-
-                <p>
-                    <strong>Payment:</strong>
-                    {{ listing["payment_methods"] | join(", ") }}
                 </p>
 
             </div>
 
             <hr>
-
         {% endfor %}
 
     {% else %}

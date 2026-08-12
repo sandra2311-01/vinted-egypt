@@ -8,8 +8,22 @@
 
     <h1>Sell an Item</h1>
 
-    <form method="POST" action="{{ url_for('sell') }}">
+    <form method="POST" action="{{ url_for('sell') }}" 
+    enctype="multipart/form-data">
+        <label for="images">Item Photos:</label>
 
+        <input
+            type="file"
+            id="images"
+            name="images"
+            accept=".jpg,.jpeg,.png,.webp"
+            multiple
+            required
+        >
+
+        <p>You can upload up to 5 photos.</p>
+
+        <br><br>
         <label>Title</label>
         <br>
         <input
@@ -20,7 +34,19 @@
         >
 
         <br><br>
+        <label for="category">Category:</label>
 
+        <select name="category" id="category" required>
+            <option value="">Select a category</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Home">Home</option>
+            <option value="Books">Books</option>
+            <option value="Sports">Sports</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <br><br>
         <label>Description</label>
         <br>
         <textarea

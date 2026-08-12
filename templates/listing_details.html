@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ listing["title"] }}</title>
+</head>
+
+<body>
+
+    <a href="{{ url_for('home') }}">
+        Back to Marketplace
+    </a>
+
+    <h1>
+        {{ listing["title"] }}
+    </h1>
+    {% if listing.get("images") %}
+
+        {% for image in listing["images"] %}
+
+            <img
+                src="{{ url_for('static', filename='uploads/' + image) }}"
+                alt="{{ listing['title'] }}"
+                width="250"
+            >
+
+        {% endfor %}
+
+    {% endif %}
+    <p>
+        <strong>Category:</strong>
+        {{ listing["category"] }}
+    </p>
+    <p>
+        {{ listing["description"] }}
+    </p>
+
+    <p>
+        <strong>Price:</strong>
+        {{ listing["price"] }} EGP
+    </p>
+
+    <p>
+        <strong>Condition:</strong>
+        {{ listing["condition"] }}
+    </p>
+
+    <p>
+        <strong>Location:</strong>
+        {{ listing["city"] }}
+    </p>
+
+    <p>
+        <strong>Payment methods:</strong>
+        {{ listing["payment_methods"] | join(", ") }}
+    </p>
+
+    <p>
+        <strong>Status:</strong>
+        {{ listing["status"] }}
+    </p>
+    <hr>
+
+<h2>Seller</h2>
+
+{% if seller %}
+
+    <p>
+        <strong>Name:</strong>
+        {{ seller["name"] }}
+    </p>
+
+{% else %}
+
+    <p>Seller information unavailable.</p>
+
+{% endif %}
+</body>
+</html>
