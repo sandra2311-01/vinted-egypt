@@ -559,10 +559,28 @@ def listing_details(listing_id):
             )
         })
 
+    # Check whether this listing is already
+    # in the current user's favorites
+    is_favorite = False
+
+    if (
+        session.get("user_id")
+        and session.get("user_id") != listing.get("seller_id")
+    ):
+
+        favorite = db["favorites"].find_one({
+            "user_id": session["user_id"],
+            "listing_id": listing["_id"]
+        })
+
+        is_favorite = favorite is not None
+
+
     return render_template(
         "listing_details.html",
         listing=listing,
-        seller=seller
+        seller=seller,
+        is_favorite=is_favorite
     )
 
 
@@ -1554,6 +1572,135 @@ def cancel_reservation(conversation_id):
             "conversation",
             conversation_id=conversation_id
         )
+    )
+# --------------------------------------------------
+# ADD FAVORITE
+# --------------------------------------------------
+
+@app.route(
+    "/listing/<listing_id>/favorite",
+    methods=["POST"]
+)
+def add_favorite(listing_id):
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    if not ObjectId.is_valid(listing_id):
+        abort(404)
+
+    listing = db["listings"].find_one({
+        "_id": ObjectId(listing_id)
+    })
+
+    if not listing:
+        abort(404)
+
+    if listing.get("status", "available") != "available":
+        return (
+            "Only available listings can be favorited",
+            400
+        )
+
+    if listing["seller_id"] == session["user_id"]:
+        return (
+            "You cannot favorite your own listing",
+            400
+        )
+
+    db["favorites"].update_one(
+        {
+            "user_id": session["user_id"],
+            "listing_id": listing["_id"]
+        },
+        {
+            "$setOnInsert": {
+                "user_id": session["user_id"],
+                "listing_id": listing["_id"],
+                "created_at": datetime.now(timezone.utc)
+            }
+        },
+        upsert=True
+    )
+
+    return redirect(
+        url_for(
+            "listing_details",
+            listing_id=listing_id
+        )
+    )
+
+
+# --------------------------------------------------
+# REMOVE FAVORITE
+# --------------------------------------------------
+
+@app.route(
+    "/listing/<listing_id>/unfavorite",
+    methods=["POST"]
+)
+def remove_favorite(listing_id):
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    if not ObjectId.is_valid(listing_id):
+        abort(404)
+
+    db["favorites"].delete_one({
+        "user_id": session["user_id"],
+        "listing_id": ObjectId(listing_id)
+    })
+
+    return redirect(
+        url_for(
+            "listing_details",
+            listing_id=listing_id
+        )
+    )
+
+
+# --------------------------------------------------
+# MY FAVORITES
+# --------------------------------------------------
+
+@app.route("/favorites")
+def favorites():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    favorite_records = list(
+        db["favorites"].find({
+            "user_id": session["user_id"]
+        })
+    )
+
+    favorite_listings = []
+
+    for favorite in favorite_records:
+
+        listing = db["listings"].find_one({
+            "_id": favorite["listing_id"]
+        })
+
+        if (
+            listing
+            and listing.get("status", "available") == "available"
+        ):
+            favorite_listings.append(
+                listing
+            )
+
+    return render_template(
+        "favorites.html",
+        listings=favorite_listings
     )
 # --------------------------------------------------
 # RUN APP

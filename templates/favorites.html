@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Favorites</title>
+</head>
+
+<body>
+
+    <h1>My Favorites</h1>
+
+    <a href="{{ url_for('home') }}">
+        Back to Marketplace
+    </a>
+
+    <br><br>
+
+    {% if listings %}
+
+        {% for listing in listings %}
+
+            <div>
+
+                {% if listing.get("images") %}
+
+                    <img
+                        src="{{ url_for(
+                            'static',
+                            filename='uploads/' + listing['images'][0]
+                        ) }}"
+                        width="150"
+                        alt="{{ listing['title'] }}"
+                    >
+
+                {% endif %}
+
+                <h2>
+                    {{ listing["title"] }}
+                </h2>
+
+                <p>
+                    <strong>Price:</strong>
+                    {{ listing["price"] }} EGP
+                </p>
+
+                <p>
+                    <strong>Category:</strong>
+                    {{ listing["category"] }}
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    {{ listing["city"] }}
+                </p>
+
+                <a href="{{ url_for(
+                    'listing_details',
+                    listing_id=listing['_id']
+                ) }}">
+                    View Listing
+                </a>
+
+                <br><br>
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'remove_favorite',
+                        listing_id=listing['_id']
+                    ) }}"
+                >
+                    <button type="submit">
+                        Remove from Favorites
+                    </button>
+                </form>
+
+                <hr>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>
+            You don't have any favorite listings yet.
+        </p>
+
+    {% endif %}
+
+</body>
+
+</html>
