@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Edit {{ listing["title"] }}</title>
+</head>
+
+<body>
+
+    <h1>Edit Listing</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <label>Title:</label>
+        <input
+            type="text"
+            name="title"
+            value="{{ listing['title'] }}"
+            required
+        >
+
+        <br><br>
+
+        <label>Description:</label>
+        <textarea
+            name="description"
+            required
+        >{{ listing["description"] }}</textarea>
+
+        <br><br>
+
+        <label>Price:</label>
+        <input
+            type="number"
+            name="price"
+            value="{{ listing['price'] }}"
+            min="1"
+            required
+        >
+
+        <br><br>
+
+        <label>Category:</label>
+
+        <select name="category" required>
+
+            <option value="Fashion"
+                {% if listing["category"] == "Fashion" %}selected{% endif %}>
+                Fashion
+            </option>
+
+            <option value="Electronics"
+                {% if listing["category"] == "Electronics" %}selected{% endif %}>
+                Electronics
+            </option>
+
+            <option value="Home"
+                {% if listing["category"] == "Home" %}selected{% endif %}>
+                Home
+            </option>
+
+            <option value="Books"
+                {% if listing["category"] == "Books" %}selected{% endif %}>
+                Books
+            </option>
+
+            <option value="Sports"
+                {% if listing["category"] == "Sports" %}selected{% endif %}>
+                Sports
+            </option>
+
+            <option value="Other"
+                {% if listing["category"] == "Other" %}selected{% endif %}>
+                Other
+            </option>
+
+        </select>
+
+        <br><br>
+
+        <label>Condition:</label>
+
+        <input
+            type="text"
+            name="condition"
+            value="{{ listing['condition'] }}"
+            required
+        >
+
+        <br><br>
+
+        <label>City:</label>
+
+        <input
+            type="text"
+            name="city"
+            value="{{ listing['city'] }}"
+            required
+        >
+
+        <br><br>
+
+        <label>Payment Methods:</label>
+
+        <label>
+            <input
+                type="checkbox"
+                name="payment_methods"
+                value="Cash"
+                {% if "Cash" in listing.get("payment_methods", []) %}checked{% endif %}
+            >
+            Cash
+        </label>
+
+        <label>
+            <input
+                type="checkbox"
+                name="payment_methods"
+                value="InstaPay"
+                {% if "InstaPay" in listing.get("payment_methods", []) %}checked{% endif %}
+            >
+            InstaPay
+        </label>
+
+        <br><br>
+
+        {% if listing.get("images") %}
+
+            <h3>Current Photos</h3>
+
+            {% for image in listing.get("images", []) %}
+
+                <div>
+
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + image) }}"
+                        width="150"
+                        alt="{{ listing['title'] }}"
+                    >
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="remove_images"
+                            value="{{ image }}"
+                        >
+                        Remove
+                    </label>
+
+                </div>
+
+                <br>
+
+            {% endfor %}
+
+        {% endif %}
+
+        <br>
+
+        <label>Add New Photos:</label>
+
+        <input
+            type="file"
+            name="new_images"
+            accept=".jpg,.jpeg,.png,.webp"
+            multiple
+        >
+
+        <p>Maximum 5 photos total.</p>
+
+        <br>
+
+        <button type="submit">
+            Save Changes
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('listing_details', listing_id=listing['_id']) }}">
+        Cancel
+    </a>
+
+</body>
+
+</html>

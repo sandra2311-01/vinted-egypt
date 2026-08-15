@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Conversation</title>
+</head>
+
+<body>
+
+    <a href="{{ url_for('messages_inbox') }}">
+        Back to Messages
+    </a>
+
+    <br><br>
+
+    {% if listing %}
+
+        <h1>
+            {{ listing["title"] }}
+        </h1>
+
+        {% if listing.get("images") %}
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='uploads/' + listing['images'][0]
+                ) }}"
+                width="150"
+                alt="{{ listing['title'] }}"
+            >
+
+        {% endif %}
+
+        <p>
+            <strong>Price:</strong>
+            {{ listing["price"] }} EGP
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            {{ listing.get("status", "available") | capitalize }}
+        </p>
+
+        {% if session.get("user_id") == conversation["seller_id"] %}
+
+            {% if listing.get("status", "available") == "available" %}
+
+                {% if buyer %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'reserve_listing',
+                            conversation_id=conversation['_id']
+                        ) }}"
+                    >
+                        <button type="submit">
+                            Reserve for {{ buyer["name"] }}
+                        </button>
+                    </form>
+
+                    <br>
+
+                {% endif %}
+
+            {% elif listing.get("status") == "reserved" %}
+
+                {% if reserved_for_this_buyer %}
+
+                    <p>
+                        <strong>
+                            Reserved for {{ buyer["name"] if buyer else "this buyer" }}
+                        </strong>
+                    </p>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'cancel_reservation',
+                            conversation_id=conversation['_id']
+                        ) }}"
+                        onsubmit="return confirm(
+                            'Are you sure you want to cancel this reservation?'
+                        );"
+                    >
+                        <button type="submit">
+                            Cancel Reservation
+                        </button>
+                    </form>
+
+                    <br>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'mark_listing_sold',
+                            listing_id=listing['_id']
+                        ) }}"
+                        onsubmit="return confirm(
+                            'Are you sure this item has been sold?'
+                        );"
+                    >
+                        <button type="submit">
+                            Mark as Sold
+                        </button>
+                    </form>
+
+                {% else %}
+
+                    <p>
+                        This item is reserved for another buyer.
+                    </p>
+
+                {% endif %}
+
+            {% elif listing.get("status") == "sold" %}
+
+                <p>
+                    <strong>This item has been sold.</strong>
+                </p>
+
+            {% endif %}
+
+
+        {% elif session.get("user_id") == conversation["buyer_id"] %}
+
+            {% if reserved_for_this_buyer %}
+
+                <p>
+                    <strong>
+                        This item is reserved for you.
+                    </strong>
+                </p>
+
+            {% elif listing.get("status") == "reserved" %}
+
+                <p>
+                    This item is reserved for another buyer.
+                </p>
+
+            {% elif listing.get("status") == "sold" %}
+
+                <p>
+                    <strong>This item has been sold.</strong>
+                </p>
+
+            {% endif %}
+
+        {% endif %}
+
+        <br>
+
+        <a href="{{ url_for(
+            'listing_details',
+            listing_id=listing['_id']
+        ) }}">
+            View Listing
+        </a>
+
+        <hr>
+
+    {% else %}
+
+        <p>
+            This listing is no longer available.
+        </p>
+
+        <hr>
+
+    {% endif %}
+
+
+    {% if session.get("user_id") == conversation["buyer_id"] %}
+
+        {% if seller %}
+
+            <h2>
+                Chat with {{ seller["name"] }}
+            </h2>
+
+        {% endif %}
+
+    {% else %}
+
+        {% if buyer %}
+
+            <h2>
+                Chat with {{ buyer["name"] }}
+            </h2>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <h3>Messages</h3>
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div>
+
+                {% if message["sender_id"] == session.get("user_id") %}
+
+                    <strong>You:</strong>
+
+                {% elif message["sender_id"] == conversation["buyer_id"] %}
+
+                    {% if buyer %}
+                        <strong>{{ buyer["name"] }}:</strong>
+                    {% else %}
+                        <strong>Buyer:</strong>
+                    {% endif %}
+
+                {% else %}
+
+                    {% if seller %}
+                        <strong>{{ seller["name"] }}:</strong>
+                    {% else %}
+                        <strong>Seller:</strong>
+                    {% endif %}
+
+                {% endif %}
+
+                <p>
+                    {{ message["body"] }}
+                </p>
+
+            </div>
+
+            <hr>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>
+            No messages yet. Start the conversation below.
+        </p>
+
+    {% endif %}
+
+
+    <h3>Send Message</h3>
+
+    <form method="POST">
+
+        <textarea
+            name="message"
+            maxlength="1000"
+            required
+            placeholder="Write a message..."
+        ></textarea>
+
+        <br><br>
+
+        <button type="submit">
+            Send
+        </button>
+
+    </form>
+
+</body>
+
+</html>

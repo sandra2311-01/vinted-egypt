@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Listings</title>
+</head>
+
+<body>
+
+    <h1>My Listings</h1>
+
+    <a href="{{ url_for('home') }}">
+        Back to Marketplace
+    </a>
+
+    <br><br>
+
+    {% if listings %}
+
+        {% for listing in listings %}
+
+            <div>
+
+                {% if listing.get("images") %}
+
+                    <img
+                        src="{{ url_for(
+                            'static',
+                            filename='uploads/' + listing['images'][0]
+                        ) }}"
+                        width="150"
+                        alt="{{ listing['title'] }}"
+                    >
+
+                {% endif %}
+
+                <h2>
+                    {{ listing["title"] }}
+                </h2>
+
+                <p>
+                    <strong>Price:</strong>
+                    {{ listing["price"] }} EGP
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    {{ listing.get("status", "available") | capitalize }}
+                </p>
+
+
+                <!-- AVAILABLE LISTING -->
+                {% if listing.get("status", "available") == "available" %}
+
+                    <a href="{{ url_for(
+                        'edit_listing',
+                        listing_id=listing['_id']
+                    ) }}">
+                        Edit
+                    </a>
+
+                    <br><br>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'hide_listing',
+                            listing_id=listing['_id']
+                        ) }}"
+                    >
+                        <button type="submit">
+                            Hide
+                        </button>
+                    </form>
+
+                    <br>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'mark_listing_sold',
+                            listing_id=listing['_id']
+                        ) }}"
+                        onsubmit="return confirm(
+                            'Are you sure this item has been sold?'
+                        );"
+                    >
+                        <button type="submit">
+                            Mark as Sold
+                        </button>
+                    </form>
+
+
+                <!-- HIDDEN LISTING -->
+                {% elif listing.get("status") == "hidden" %}
+
+                    <p>
+                        This listing is hidden from the marketplace.
+                    </p>
+
+                    <a href="{{ url_for(
+                        'edit_listing',
+                        listing_id=listing['_id']
+                    ) }}">
+                        Edit
+                    </a>
+
+                    <br><br>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'unhide_listing',
+                            listing_id=listing['_id']
+                        ) }}"
+                    >
+                        <button type="submit">
+                            Unhide
+                        </button>
+                    </form>
+
+
+                <!-- SOLD LISTING -->
+                {% elif listing.get("status") == "sold" %}
+
+                    <p>
+                        This item has been sold.
+                    </p>
+
+                {% endif %}
+
+
+                <br><br>
+
+                <a href="{{ url_for(
+                    'listing_details',
+                    listing_id=listing['_id']
+                ) }}">
+                    View Listing
+                </a>
+
+                <br><br>
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'delete_listing',
+                        listing_id=listing['_id']
+                    ) }}"
+                    onsubmit="return confirm(
+                        'Are you sure you want to permanently delete this listing?'
+                    );"
+                >
+                    <button type="submit">
+                        Delete Listing
+                    </button>
+                </form>
+
+                <hr>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>
+            You haven't created any listings yet.
+        </p>
+
+    {% endif %}
+
+</body>
+
+</html>

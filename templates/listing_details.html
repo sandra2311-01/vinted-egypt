@@ -13,23 +13,28 @@
     <h1>
         {{ listing["title"] }}
     </h1>
+
     {% if listing.get("images") %}
 
-        {% for image in listing["images"] %}
+        {% for image in listing.get("images", []) %}
 
-            <img
-                src="{{ url_for('static', filename='uploads/' + image) }}"
-                alt="{{ listing['title'] }}"
-                width="250"
-            >
+            <div>
+                <img
+                    src="{{ url_for('static', filename='uploads/' + image) }}"
+                    width="250"
+                    alt="{{ listing['title'] }}"
+                >
+            </div>
 
         {% endfor %}
 
     {% endif %}
+
     <p>
         <strong>Category:</strong>
         {{ listing["category"] }}
     </p>
+
     <p>
         {{ listing["description"] }}
     </p>
@@ -58,21 +63,124 @@
         <strong>Status:</strong>
         {{ listing["status"] }}
     </p>
+
     <hr>
 
-<h2>Seller</h2>
+    <h2>Seller</h2>
 
-{% if seller %}
+    {% if seller %}
 
-    <p>
-        <strong>Name:</strong>
-        {{ seller["name"] }}
-    </p>
+        <p>
+            <strong>Name:</strong>
+            {{ seller["name"] }}
+        </p>
+        {% if session.get("user_id") and session.get("user_id") != listing["seller_id"] %}
 
-{% else %}
+            {% if listing.get("status", "available") == "available" %}
 
-    <p>Seller information unavailable.</p>
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'start_conversation',
+                        listing_id=listing['_id']
+                    ) }}"
+                >
+                    <button type="submit">
+                        Message Seller
+                    </button>
+                </form>
 
-{% endif %}
+                <br>
+
+            {% endif %}
+
+        {% endif %}
+
+        {% if session.get("user_id") == listing["seller_id"] %}
+
+        <hr>
+
+        <h3>Manage Listing</h3>
+
+        {% if listing.get("status", "available") == "available" %}
+
+            <a href="{{ url_for('edit_listing', listing_id=listing['_id']) }}">
+                Edit Listing
+            </a>
+
+            <br><br>
+
+            <form
+                method="POST"
+                action="{{ url_for('hide_listing', listing_id=listing['_id']) }}"
+            >
+                <button type="submit">
+                    Hide Listing
+                </button>
+            </form>
+
+            <br>
+
+            <form
+                method="POST"
+                action="{{ url_for('mark_listing_sold', listing_id=listing['_id']) }}"
+                onsubmit="return confirm('Are you sure this item has been sold?');"
+            >
+                <button type="submit">
+                    Mark as Sold
+                </button>
+            </form>
+
+            <br>
+
+        {% elif listing.get("status") == "hidden" %}
+
+            <p>
+                This listing is currently hidden from the marketplace.
+            </p>
+
+            <a href="{{ url_for('edit_listing', listing_id=listing['_id']) }}">
+                Edit Listing
+            </a>
+
+            <br><br>
+
+            <form
+                method="POST"
+                action="{{ url_for('unhide_listing', listing_id=listing['_id']) }}"
+            >
+                <button type="submit">
+                    Unhide Listing
+                </button>
+            </form>
+
+            <br>
+
+        {% elif listing.get("status") == "sold" %}
+
+            <p>
+                This item has been sold.
+            </p>
+
+        {% endif %}
+
+        <form
+            method="POST"
+            action="{{ url_for('delete_listing', listing_id=listing['_id']) }}"
+            onsubmit="return confirm('Are you sure you want to permanently delete this listing?');"
+        >
+            <button type="submit">
+                Delete Listing
+            </button>
+        </form>
+
+    {% endif %}
+
+    {% else %}
+
+        <p>Seller information unavailable.</p>
+
+    {% endif %}
+
 </body>
 </html>

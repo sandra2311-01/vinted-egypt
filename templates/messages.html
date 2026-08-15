@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Messages</title>
+</head>
+
+<body>
+
+    <h1>Messages</h1>
+
+    <a href="{{ url_for('home') }}">
+        Back to Marketplace
+    </a>
+
+    <br><br>
+
+    {% if conversations %}
+
+        {% for item in conversations %}
+
+            <div>
+
+                {% if item.listing %}
+
+                    <h3>
+                        {{ item.listing["title"] }}
+                    </h3>
+
+                    {% if item.listing.get("images") %}
+
+                        <img
+                            src="{{ url_for(
+                                'static',
+                                filename='uploads/' + item.listing['images'][0]
+                            ) }}"
+                            width="100"
+                            alt="{{ item.listing['title'] }}"
+                        >
+
+                    {% endif %}
+
+                {% else %}
+
+                    <h3>
+                        Listing unavailable
+                    </h3>
+
+                {% endif %}
+
+                {% if item.other_user %}
+
+                    <p>
+                        <strong>Conversation with:</strong>
+                        {{ item.other_user["name"] }}
+                    </p>
+
+                {% endif %}
+
+
+                {% if item.last_message %}
+
+                    <p>
+                        <strong>Last message:</strong>
+                        {{ item.last_message["body"] }}
+                    </p>
+
+                {% else %}
+
+                    <p>
+                        No messages yet.
+                    </p>
+
+                {% endif %}
+
+                <a href="{{ url_for(
+                    'conversation',
+                    conversation_id=item.conversation['_id']
+                ) }}">
+                    Open Conversation
+                </a>
+
+                <hr>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>
+            You don't have any conversations yet.
+        </p>
+
+    {% endif %}
+
+</body>
+
+</html>
