@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
     <title>My Marketplace</title>
 
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/style.css') }}"
     >
+
 </head>
 
+
 <body>
+
+
+    <!-- NAVIGATION -->
 
     <nav>
 
         <a href="{{ url_for('home') }}">
             Home
         </a>
+
 
         {% if session.get("user_id") %}
 
@@ -26,23 +34,27 @@
             <a href="{{ url_for('profile') }}">
                 Profile
             </a>
+
             <a href="{{ url_for('sell') }}">
                 Sell Item
             </a>
+
             <a href="{{ url_for('my_listings') }}">
                 My Listings
             </a>
+
             <a href="{{ url_for('favorites') }}">
                 My Favorites
             </a>
+
             <a href="{{ url_for('messages_inbox') }}">
                 Messages
             </a>
 
-
             <a href="{{ url_for('logout') }}">
                 Logout
             </a>
+
 
         {% else %}
 
@@ -58,45 +70,374 @@
 
     </nav>
 
+
     <hr>
 
-    <h1>My Marketplace</h1>
 
-    <p>Buy and sell pre-owned items.</p>
+    <!-- PAGE TITLE -->
+
+    <h1>
+        My Marketplace
+    </h1>
+
+    <p>
+        Buy and sell pre-owned items.
+    </p>
+
+
     <hr>
 
-    <h2>Available Listings</h2>
+
+    <!-- SEARCH AND FILTERS -->
+
+    <h2>
+        Search Marketplace
+    </h2>
+
+
+    <form
+        method="GET"
+        action="{{ url_for('home') }}"
+    >
+
+
+        <!-- TEXT SEARCH -->
+
+        <div>
+
+            <label for="search">
+                Search:
+            </label>
+
+            <input
+                type="text"
+                id="search"
+                name="search"
+                value="{{ search }}"
+                placeholder="Search listings..."
+            >
+
+        </div>
+
+
+        <br>
+
+
+        <!-- CATEGORY -->
+
+        <div>
+
+            <label for="category">
+                Category:
+            </label>
+
+            <select
+                id="category"
+                name="category"
+            >
+
+                <option value="">
+                    All Categories
+                </option>
+
+                {% for category in categories %}
+
+                    <option
+                        value="{{ category }}"
+
+                        {% if selected_category == category %}
+                            selected
+                        {% endif %}
+                    >
+
+                        {{ category }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <br>
+
+
+        <!-- CONDITION -->
+
+        <div>
+
+            <label for="condition">
+                Condition:
+            </label>
+
+            <select
+                id="condition"
+                name="condition"
+            >
+
+                <option value="">
+                    All Conditions
+                </option>
+
+
+                {% for condition in conditions %}
+
+                    <option
+                        value="{{ condition }}"
+
+                        {% if selected_condition == condition %}
+                            selected
+                        {% endif %}
+                    >
+
+                        {{ condition }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <br>
+
+
+        <!-- LOCATION -->
+
+        <div>
+
+            <label for="city">
+                Location:
+            </label>
+
+            <select
+                id="city"
+                name="city"
+            >
+
+                <option value="">
+                    All Locations
+                </option>
+
+
+                {% for city in cities %}
+
+                    <option
+                        value="{{ city }}"
+
+                        {% if selected_city == city %}
+                            selected
+                        {% endif %}
+                    >
+
+                        {{ city }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <br>
+
+
+        <!-- MINIMUM PRICE -->
+
+        <div>
+
+            <label for="min_price">
+                Minimum Price:
+            </label>
+
+            <input
+                type="number"
+                id="min_price"
+                name="min_price"
+                min="0"
+                value="{{ min_price }}"
+                placeholder="Minimum EGP"
+            >
+
+        </div>
+
+
+        <br>
+
+
+        <!-- MAXIMUM PRICE -->
+
+        <div>
+
+            <label for="max_price">
+                Maximum Price:
+            </label>
+
+            <input
+                type="number"
+                id="max_price"
+                name="max_price"
+                min="0"
+                value="{{ max_price }}"
+                placeholder="Maximum EGP"
+            >
+
+        </div>
+
+
+        <br>
+
+
+        <!-- APPLY FILTERS -->
+
+        <button type="submit">
+            Search / Apply Filters
+        </button>
+
+
+        <!-- CLEAR FILTERS -->
+
+        <a href="{{ url_for('home') }}">
+            Clear Filters
+        </a>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- AVAILABLE LISTINGS -->
+
+    <h2>
+        Available Listings
+    </h2>
+
+
     {% if listings %}
+
+
         {% for listing in listings %}
 
             <div>
 
+
+                <!-- IMAGE -->
+
+                {% if listing.get("images") %}
+
+                    <img
+                        src="{{ url_for(
+                            'static',
+                            filename='uploads/' + listing['images'][0]
+                        ) }}"
+                        width="180"
+                        alt="{{ listing['title'] }}"
+                    >
+
+                {% endif %}
+
+
+                <!-- TITLE -->
+
                 <h3>
-                    <a href="{{ url_for('listing_details', listing_id=listing['_id']) }}">
+
+                    <a href="{{ url_for(
+                        'listing_details',
+                        listing_id=listing['_id']
+                    ) }}">
+
                         {{ listing["title"] }}
+
                     </a>
+
                 </h3>
 
-                <p>
-                    <strong>Price:</strong>
-                    {{ listing["price"] }} EGP
-                </p>
+
+                <!-- PRICE -->
 
                 <p>
-                    <strong>Location:</strong>
-                    {{ listing["city"] }}
+
+                    <strong>
+                        Price:
+                    </strong>
+
+                    {{ listing["price"] }} EGP
+
                 </p>
+
+
+                <!-- CATEGORY -->
+
+                <p>
+
+                    <strong>
+                        Category:
+                    </strong>
+
+                    {{ listing["category"] }}
+
+                </p>
+
+
+                <!-- CONDITION -->
+
+                <p>
+
+                    <strong>
+                        Condition:
+                    </strong>
+
+                    {{ listing["condition"] }}
+
+                </p>
+
+
+                <!-- LOCATION -->
+
+                <p>
+
+                    <strong>
+                        Location:
+                    </strong>
+
+                    {{ listing["city"] }}
+
+                </p>
+
 
             </div>
 
+
             <hr>
+
+
         {% endfor %}
+
 
     {% else %}
 
-        <p>No listings available yet.</p>
+
+        <p>
+            No listings match your search or filters.
+        </p>
+
+
+        <a href="{{ url_for('home') }}">
+            Clear Search and Filters
+        </a>
+
 
     {% endif %}
 
+
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 import os
 import uuid
+import re
 from datetime import datetime, timezone
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
@@ -157,26 +158,218 @@ def get_user_conversation(conversation_id):
 
     return conversation
 
+
 # --------------------------------------------------
-# HOME
+# HOME / SEARCH / FILTERS
 # --------------------------------------------------
 
 @app.route("/")
 def home():
 
-    listings = db["listings"]
+    # ------------------------------
+    # GET SEARCH / FILTER VALUES
+    # ------------------------------
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    category = request.args.get(
+        "category",
+        ""
+    ).strip()
+
+    min_price = request.args.get(
+        "min_price",
+        ""
+    ).strip()
+
+    max_price = request.args.get(
+        "max_price",
+        ""
+    ).strip()
+
+    condition = request.args.get(
+        "condition",
+        ""
+    ).strip()
+
+    city = request.args.get(
+        "city",
+        ""
+    ).strip()
+
+
+    # ------------------------------
+    # BASE QUERY
+    # ------------------------------
+
+    query = {
+        "status": "available"
+    }
+
+
+    # ------------------------------
+    # TEXT SEARCH
+    # ------------------------------
+
+    if search:
+
+        safe_search = re.escape(
+            search
+        )
+
+        query["$or"] = [
+            {
+                "title": {
+                    "$regex": safe_search,
+                    "$options": "i"
+                }
+            },
+            {
+                "description": {
+                    "$regex": safe_search,
+                    "$options": "i"
+                }
+            }
+        ]
+
+
+    # ------------------------------
+    # CATEGORY FILTER
+    # ------------------------------
+
+    if category:
+
+        query["category"] = category
+
+
+    # ------------------------------
+    # CONDITION FILTER
+    # ------------------------------
+
+    if condition:
+
+        query["condition"] = condition
+
+
+    # ------------------------------
+    # LOCATION FILTER
+    # ------------------------------
+
+    if city:
+
+        query["city"] = {
+            "$regex": f"^{re.escape(city)}$",
+            "$options": "i"
+        }
+
+
+    # ------------------------------
+    # PRICE FILTER
+    # ------------------------------
+
+    price_filter = {}
+
+    if min_price:
+
+        try:
+            min_price_value = int(
+                min_price
+            )
+
+            if min_price_value >= 0:
+                price_filter["$gte"] = (
+                    min_price_value
+                )
+
+        except ValueError:
+            pass
+
+
+    if max_price:
+
+        try:
+            max_price_value = int(
+                max_price
+            )
+
+            if max_price_value >= 0:
+                price_filter["$lte"] = (
+                    max_price_value
+                )
+
+        except ValueError:
+            pass
+
+
+    if price_filter:
+
+        query["price"] = price_filter
+
+
+    # ------------------------------
+    # GET MATCHING LISTINGS
+    # ------------------------------
 
     all_listings = list(
-        listings.find({
-            "status": "available"
-        })
+        db["listings"].find(
+            query
+        )
     )
+
+
+    # ------------------------------
+    # VALUES FOR FILTER DROPDOWNS
+    # ------------------------------
+
+    categories = [
+        "Fashion",
+        "Electronics",
+        "Home",
+        "Books",
+        "Sports",
+        "Other"
+    ]
+
+    conditions = sorted(
+        value
+        for value in db["listings"].distinct(
+            "condition"
+        )
+        if value
+    )
+
+    cities = sorted(
+        value
+        for value in db["listings"].distinct(
+            "city"
+        )
+        if value
+    )
+
+
+    # ------------------------------
+    # RENDER
+    # ------------------------------
 
     return render_template(
         "home.html",
-        listings=all_listings
-    )
 
+        listings=all_listings,
+
+        categories=categories,
+        conditions=conditions,
+        cities=cities,
+
+        search=search,
+        selected_category=category,
+        selected_condition=condition,
+        selected_city=city,
+        min_price=min_price,
+        max_price=max_price
+    )
 
 # --------------------------------------------------
 # REGISTER
